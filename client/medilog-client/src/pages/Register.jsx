@@ -3,6 +3,7 @@ import { FaGoogle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 export default function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,7 +23,7 @@ export default function Register() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if(validPassword()) {
+    if (validPassword()) {
       // Handle registration logic here
     }
   }
@@ -49,7 +50,7 @@ export default function Register() {
           <span className="text-sm text-slate-600 dark:text-slate-400">Start your journey with us</span>
         </div>
 
-        <button 
+        <button
           className="w-full mb-6 py-2.5 px-4 border border-slate-300 dark:border-slate-700 rounded-lg 
             flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-800/50 
             hover:bg-white/80 dark:hover:bg-slate-700/50 
@@ -67,6 +68,26 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              autoFocus
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              className="w-full px-4 py-2.5 bg-white/50 dark:bg-slate-800/50 
+          border border-slate-300/80 dark:border-slate-700/80 
+          rounded-lg focus:ring-2 focus:ring-green-400 dark:focus:ring-green-500 
+          focus:border-transparent outline-none transition duration-200
+          text-slate-900 dark:text-slate-100
+          placeholder:text-slate-500 dark:placeholder:text-slate-400"
+              placeholder="Enter your full name..."
+            />
+          </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
               Email address
