@@ -34,7 +34,7 @@ export const loginUser = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
-    // console.log("Login User Function Called");
+    console.log("Login User Function Called", { email, password });
     // console.log(req.body);
   } catch (err) {
     res.status(500).json({ message: err.message });

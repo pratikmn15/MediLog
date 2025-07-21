@@ -1,25 +1,43 @@
 import React, { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Dashboard from "./Dashboard";
 export default function Login() {
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
+    setLoading(true);
+    // Handle login
     try {
-      const res = await axios.post(
+      const formData = {
+        email: email.trim(),
+        password: password,
+      };
+      const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
-        formData
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
-
       // Store token in localStorage (or cookie, if you prefer)
-      localStorage.setItem('token', res.data.token);
-      setMessage(res.data.message);
+      localStorage.setItem('token', response.data.token);
+      setMessage(response.data.message);
       // redirect to dashboard or home
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -63,6 +81,15 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {message && (
+            <div className={`p-3 rounded-lg text-sm ${
+              message.includes('successful') 
+                ? 'bg-green-100/50 dark:bg-green-900/50 text-green-600 dark:text-green-400'
+                : 'bg-red-100/50 dark:bg-red-900/50 text-red-600 dark:text-red-400'
+            }`}>
+              {message}
+            </div>
+          )}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
               Email address
@@ -114,14 +141,16 @@ export default function Login() {
           </div>
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 
               dark:from-green-600 dark:to-green-700
               text-white text-sm rounded-lg font-semibold 
               hover:from-green-600 hover:to-green-700
               dark:hover:from-green-500 dark:hover:to-green-600 
-              transition-all duration-300 shadow-lg"
+              transition-all duration-300 shadow-lg
+              disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign in
+            {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
         <p className="mt-8 text-sm text-center text-slate-600 dark:text-slate-400">
