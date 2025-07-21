@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 import Dashboard from "./Dashboard";
 export default function Login() {
+  const { login } = useAuth();
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -27,13 +29,14 @@ export default function Login() {
           },
         }
       );
-      // Store token in localStorage (or cookie, if you prefer)
-      localStorage.setItem('token', response.data.token);
-      setMessage(response.data.message);
-      // redirect to dashboard or home
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      if(response.data.token) {
+        login(response.data.token);
+        setMessage(response.data.message);
+        // redirect to dashboard or home
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
+      }
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');
     } finally {

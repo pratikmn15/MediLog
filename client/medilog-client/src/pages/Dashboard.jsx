@@ -6,48 +6,51 @@ import { useAuth } from '../context/AuthContext';
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { logout } = useAuth();
+  // const { logout } = useAuth();
+  const { token, logout, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem('token');
+      // const token = localStorage.getItem('token');
       
-      if (!token) {
+      if (!isAuthenticated || !token) {
         navigate('/login');
         return;
       }
 
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/user/profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
-        setUser(response.data);
-      } catch (err) {
-        console.error('Dashboard error:', err);
-        if (err.response?.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/login');
-        }
-        setError(err.response?.data?.message || 'Failed to fetch user data');
-      } finally {
-        setLoading(false);
-      }
+      // try {
+      //   const response = await axios.get(
+      //     `${import.meta.env.VITE_API_BASE_URL}/user/profile`,
+      //     {
+      //       headers: {
+      //         Authorization: `Bearer ${token}`
+      //       }
+      //     }
+      //   );
+      //   setUser(response.data);
+      // } catch (err) {
+      //   console.error('Dashboard error:', err);
+      //   if (err.response?.status === 401) {
+      //     localStorage.removeItem('token');
+      //     navigate('/login');
+      //   }
+      //   setError(err.response?.data?.message || 'Failed to fetch user data');
+      // } finally {
+      //   setLoading(false);
+      // }
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, [navigate, token, isAuthenticated, logout]);
 
   // const handleLogout = () => {
   //   localStorage.removeItem('token');
   //   navigate('/login');
   // };
+
+
 
   if (loading) {
     return (
