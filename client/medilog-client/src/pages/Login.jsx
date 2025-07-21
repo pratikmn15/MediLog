@@ -5,9 +5,22 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle login logic here
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
+        formData
+      );
+
+      // Store token in localStorage (or cookie, if you prefer)
+      localStorage.setItem('token', res.data.token);
+      setMessage(res.data.message);
+      // redirect to dashboard or home
+    } catch (err) {
+      setMessage(err.response?.data?.message || 'Login failed');
+    }
   }
 
   return (
@@ -32,7 +45,7 @@ export default function Login() {
           <span className="text-sm text-slate-600 dark:text-slate-400">Please enter your details to sign in</span>
         </div>
 
-        <button 
+        <button
           className="w-full mb-6 py-2.5 px-4 border border-slate-300 dark:border-slate-700 rounded-lg 
             flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-800/50 
             hover:bg-white/80 dark:hover:bg-slate-700/50 

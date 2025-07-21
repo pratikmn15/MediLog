@@ -25,17 +25,17 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
-    // const user = await User.findOne({ email });
-    // if (!user) return res.status(404).json({ message: "User not found" });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // const isMatch = await bcrypt.compare(password, user.password);
-    // if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
-    // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
-    console.log("Login User Function Called");
-    console.log(req.body);
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    // console.log("Login User Function Called");
+    // console.log(req.body);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

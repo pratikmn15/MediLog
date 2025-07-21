@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Register() {
+  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,10 +25,62 @@ export default function Register() {
     return true;
   };
 
-  function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validPassword()) {
-      // Handle registration logic here
+      setLoading(true);
+      try {
+        const formData = {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password
+        };
+        setMessage(""); // Reset message before making request
+
+        // Debugging: Log the registration request details
+        console.log('Sending registration request:', {
+          url: `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
+          data: formData
+        });
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        // Check if we have a response and it was successful
+        if (response.data) {
+          setMessage("Registration successful!");
+          // Redirect to login page after successful registration
+          setTimeout(() => {
+            navigate('/login');
+          }, 2000);
+        }
+      } catch (err) {
+        // More detailed error handling
+        console.error('Registration error:', err);
+
+        // Debugging: Log the full error object
+        console.error('Full error object:', {
+          message: err.message,
+          response: err.response,
+          status: err.response?.status,
+          data: err.response?.data
+        });
+
+        setMessage(
+          err.response?.data?.message || 
+          err.message || 
+          'Registration failed. Please try again.'
+        );
+      } finally {
+        setLoading(false);
+      }
     }
   }
 
@@ -68,6 +124,15 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {message && (
+            <div className={`p-3 rounded-lg text-sm ${
+              message.includes('successful') 
+                ? 'bg-green-100/50 dark:bg-green-900/50 text-green-600 dark:text-green-400'
+                : 'bg-red-100/50 dark:bg-red-900/50 text-red-600 dark:text-red-400'
+            }`}>
+              {message}
+            </div>
+          )}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
               Name
@@ -155,14 +220,16 @@ export default function Register() {
           </div>
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 
               dark:from-green-600 dark:to-green-700
               text-white text-sm rounded-lg font-semibold 
               hover:from-green-600 hover:to-green-700
               dark:hover:from-green-500 dark:hover:to-green-600 
-              transition-all duration-300 shadow-lg"
+              transition-all duration-300 shadow-lg
+              disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
         <p className="mt-8 text-sm text-center text-slate-600 dark:text-slate-400">
