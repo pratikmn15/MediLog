@@ -1,4 +1,3 @@
 /client/medilog-client/node_modules
-# Ignore node_modules in the client directory
 /server/node_modules
 /server/.env
