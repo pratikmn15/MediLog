@@ -78,12 +78,20 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Welcome, {user?.name}!
             </h1>
-            <button 
-              onClick={logout}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
-            >
-              Logout
-            </button>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => navigate('/user-details')}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
+              >
+                Update Profile
+              </button>
+              <button 
+                onClick={logout}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
