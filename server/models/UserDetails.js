@@ -16,7 +16,7 @@ const userDetailsSchema = new mongoose.Schema({
 
   // Contact Info
   phone: { type: String },
-  email: { type: String },
+  // Remove email field from here since it will come from User model
   address: {
     line1: String,
     line2: String,

@@ -14,7 +14,6 @@ const UserDetailsForm = () => {
     gender: '',
     bloodGroup: '',
     phone: '',
-    email: '',
     address: {
       line1: '',
       line2: '',
@@ -182,12 +181,14 @@ const UserDetailsForm = () => {
                 value={formData.dateOfBirth?.split('T')[0] || ''} 
                 onChange={handleChange} 
                 className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                required
               />
               <select 
                 name="gender" 
                 value={formData.gender} 
                 onChange={handleChange} 
                 className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                required
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
@@ -207,19 +208,11 @@ const UserDetailsForm = () => {
           {/* Contact Info Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <input 
                 name="phone" 
                 placeholder="Phone" 
                 value={formData.phone} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="email" 
-                placeholder="Email" 
-                type="email"
-                value={formData.email} 
                 onChange={handleChange} 
                 className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
               />

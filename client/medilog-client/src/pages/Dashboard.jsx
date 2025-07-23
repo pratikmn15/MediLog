@@ -86,6 +86,12 @@ export default function Dashboard() {
                 Update Profile
               </button>
               <button 
+                onClick={() => navigate('/appointments')}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200"
+              >
+                Schedule Appointment
+              </button>
+              <button 
                 onClick={logout}
                 className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
               >

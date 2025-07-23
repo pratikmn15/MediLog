@@ -3,49 +3,60 @@ import Login from './Pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import UserDetailsForm from './pages/UserDetailsForm';
+import AppointmentForm from './pages/AppointmentForm';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import ProtectedRoute from './components/ProtectedRoute';
-import AuthRedirect from './components/AuthRedirect';
+import RouteGuard from './components/RouteGuard';
 
 function App() {
   return (
     <div className="w-full min-h-screen">
       <Routes>
-        {/* Redirect root to login or dashboard based on auth status */}
         <Route path="/" element={<Navigate to="/login" replace />} />
+        
+        {/* Auth pages - redirect to dashboard if already logged in */}
         <Route 
           path="/login" 
           element={
-            <AuthRedirect>
+            <RouteGuard requireAuth={false}>
               <Login />
-            </AuthRedirect>
+            </RouteGuard>
           } 
         />
         <Route 
           path="/register" 
           element={
-            <AuthRedirect>
+            <RouteGuard requireAuth={false}>
               <Register />
-            </AuthRedirect>
+            </RouteGuard>
           } 
         />
+        
+        {/* Protected pages - require authentication */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <RouteGuard requireAuth={true}>
               <Dashboard />
-            </ProtectedRoute>
+            </RouteGuard>
           }
         />
         <Route
           path="/user-details"
           element={
-            <ProtectedRoute>
+            <RouteGuard requireAuth={true}>
               <UserDetailsForm />
-            </ProtectedRoute>
+            </RouteGuard>
           }
         />
-        {/* Add a catch-all route for 404 */}
+        <Route
+          path="/appointments"
+          element={
+            <RouteGuard requireAuth={true}>
+              <AppointmentForm />
+            </RouteGuard>
+          }
+        />
+        
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

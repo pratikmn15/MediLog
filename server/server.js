@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import userDetailsRoutes from './routes/userDetailsRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import './jobs/reminderScheduler.js';
 dotenv.config();
 const app = express();
 
@@ -16,6 +18,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user-details', userDetailsRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 // MongoDB Connect
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
