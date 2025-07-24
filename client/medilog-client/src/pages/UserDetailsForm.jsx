@@ -54,6 +54,7 @@ const UserDetailsForm = () => {
         );
         
         if (response.data) {
+          console.log('Loading existing user details for editing...');
           setFormData(prevData => ({
             ...prevData,
             ...response.data,
@@ -62,7 +63,10 @@ const UserDetailsForm = () => {
           }));
         }
       } catch (err) {
-        if (err.response?.status !== 404) {
+        if (err.response?.status === 404) {
+          console.log('No existing details found - will create new');
+          // Just continue with empty form
+        } else {
           setError(err.response?.data?.message || 'Failed to load user details');
         }
       } finally {
@@ -101,9 +105,30 @@ const UserDetailsForm = () => {
     setLoading(true);
 
     try {
+      // Clean the data before sending
+      const cleanData = {
+        ...formData,
+        // Remove _id and other MongoDB fields that shouldn't be sent
+        _id: undefined,
+        __v: undefined,
+        createdAt: undefined,
+        updatedAt: undefined,
+        user: undefined // Remove user field as it's set by the server
+      };
+
+      // Remove undefined values
+      Object.keys(cleanData).forEach(key => {
+        if (cleanData[key] === undefined) {
+          delete cleanData[key];
+        }
+      });
+
+      console.log('Submitting data:', cleanData);
+
+      // Always use POST - let backend handle create/update logic
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/user-details`,
-        formData,
+        cleanData,
         {
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -112,10 +137,21 @@ const UserDetailsForm = () => {
         }
       );
       
+      console.log('Save successful:', response.data);
       alert('Details saved successfully!');
       navigate('/dashboard');
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Error saving details');
+      console.error('Save error:', err);
+      console.error('Error response:', err.response?.data);
+      
+      if (err.response?.status === 400) {
+        alert(`Validation Error: ${err.response.data.message || 'Please check required fields'}`);
+      } else if (err.response?.status === 401) {
+        alert('Authentication failed. Please login again.');
+        navigate('/login');
+      } else {
+        alert(err.response?.data?.message || err.message || 'Error saving details');
+      }
     } finally {
       setLoading(false);
     }

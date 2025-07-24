@@ -1,44 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import Dashboard from "./Dashboard";
 export default function Login() {
-  const { login } = useAuth();
+  const { login, isAuthenticated, token } = useAuth();
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.log('Auth state changed:', { isAuthenticated, token });
+    
+    if (isAuthenticated && token) {
+      console.log('Should redirect to dashboard now');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, token, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Handle login
+    
     try {
-      const formData = {
-        email: email.trim(),
-        password: password,
-      };
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if(response.data.token) {
-        login(response.data.token);
-        setMessage(response.data.message);
-        // redirect to dashboard or home
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1000);
+      // Use the AuthContext login method directly
+      const result = await login(email.trim(), password);
+      
+      if (result.success) {
+        setMessage('Login successful!');
+      } else {
+        setMessage(result.message);
       }
     } catch (err) {
-      setMessage(err.response?.data?.message || 'Login failed');
+      console.error('Login error:', err);
+      setMessage('Login failed');
     } finally {
       setLoading(false);
     }
