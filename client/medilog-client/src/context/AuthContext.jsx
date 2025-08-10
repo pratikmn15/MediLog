@@ -1,45 +1,66 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
-const API_BASE_URL = 'http://localhost:5000/api'; // Adjust the base URL as needed
+// Prefer environment variable; fallback to localhost
+const API_BASE_URL = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem('token'));
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')));
-  const [isAuthenticated, setIsAuthenticated] = useState(!!token);
+  const [token, setToken] = useState(() => localStorage.getItem('token')); // lazy init
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(false); // no flash phase if only reading localStorage
 
-  const login = async (email, password) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password
-      });
-      
-      const { token, user } = response.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user)); // Store user info
-      setToken(token);
-      setUser(user); // Add user to context
-      setIsAuthenticated(true);
-      
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.response?.data?.message || 'Login failed' };
+  // Supports two modes:
+  // 1) login(email, password) -> performs API call, returns { success, message }
+  // 2) login(token, null) -> direct token injection (e.g. SSO) maintaining backward compatibility
+  const login = async (arg1, arg2) => {
+    // Mode 1: credentials supplied
+    if (arg2 !== null && typeof arg2 === 'string') {
+      const email = arg1;
+      const password = arg2;
+      try {
+        const res = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
+        const newToken = res.data?.token;
+        if (!newToken) {
+          return { success: false, message: 'No token returned' };
+        }
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+        // Optionally store minimal user object if returned
+        if (res.data?.user) setUser(res.data.user);
+        return { success: true, message: 'Logged in' };
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Login failed';
+        return { success: false, message: msg };
+      }
     }
+    // Mode 2: direct token (legacy usage): login(token)
+    const directToken = arg1;
+    if (directToken) {
+      localStorage.setItem('token', directToken);
+      setToken(directToken);
+      return { success: true, message: 'Token set' };
+    }
+    return { success: false, message: 'Invalid login invocation' };
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
   };
 
+  const isAuthenticated = !!token;
+
   return (
-    <AuthContext.Provider value={{ token, user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{
+      token,
+      user,
+      isAuthenticated,
+      authLoading,
+      login,
+      logout
+    }}>
       {children}
     </AuthContext.Provider>
   );

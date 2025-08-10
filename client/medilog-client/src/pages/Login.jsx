@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import Dashboard from "./Dashboard";
 export default function Login() {
   const { login, isAuthenticated, token } = useAuth();
   const [message, setMessage] = useState("");
@@ -12,14 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    console.log('Auth state changed:', { isAuthenticated, token });
-    
-    if (isAuthenticated && token) {
-      console.log('Should redirect to dashboard now');
-      navigate('/dashboard', { replace: true });
-    }
-  }, [isAuthenticated, token, navigate]);
+  // Redirection handled after successful login & by RouteGuard for already-authenticated users.
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,11 +20,10 @@ export default function Login() {
     try {
       // Use the AuthContext login method directly
       const result = await login(email.trim(), password);
-      
+      setMessage(result.message);
       if (result.success) {
-        setMessage('Login successful!');
-      } else {
-        setMessage(result.message);
+        // Navigate explicitly; guard will also protect auth pages
+        navigate('/dashboard', { replace: true });
       }
     } catch (err) {
       console.error('Login error:', err);
