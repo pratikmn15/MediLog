@@ -1,5 +1,5 @@
 import UserDetails from '../models/UserDetails.js';
-
+//changed file name
 // Create or update user details
 export const createOrUpdateDetails = async (req, res) => {
   try {
