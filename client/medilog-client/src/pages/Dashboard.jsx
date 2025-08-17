@@ -46,6 +46,85 @@ export default function Dashboard() {
 
   const displayName = userDetails?.fullName || 'User';
 
+  // Improved profile completeness check
+  const checkProfileCompleteness = (details) => {
+    if (!details) return { isComplete: false, completionPercentage: 0 };
+    
+    const requiredFields = [
+      'fullName',
+      'dateOfBirth', 
+      'gender',
+      'phone'
+    ];
+    
+    const importantFields = [
+      'bloodGroup',
+      'address.city',
+      'address.state',
+      'emergencyContact.name',
+      'emergencyContact.phone'
+    ];
+    
+    const optionalFields = [
+      'allergies',
+      'chronicDiseases', 
+      'currentMedications',
+      'insuranceProvider'
+    ];
+    
+    let filledRequired = 0;
+    let filledImportant = 0;
+    let filledOptional = 0;
+    
+    // Check required fields
+    requiredFields.forEach(field => {
+      const value = details[field];
+      if (value && String(value).trim() !== '') {
+        filledRequired++;
+      }
+    });
+    
+    // Check important fields (nested fields need special handling)
+    importantFields.forEach(field => {
+      let value;
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        value = details[parent]?.[child];
+      } else {
+        value = details[field];
+      }
+      if (value && String(value).trim() !== '') {
+        filledImportant++;
+      }
+    });
+    
+    // Check optional fields
+    optionalFields.forEach(field => {
+      const value = details[field];
+      if (value && String(value).trim() !== '') {
+        filledOptional++;
+      }
+    });
+    
+    const totalFields = requiredFields.length + importantFields.length + optionalFields.length;
+    const totalFilled = filledRequired + filledImportant + filledOptional;
+    const completionPercentage = Math.round((totalFilled / totalFields) * 100);
+    
+    // Consider complete if all required + most important fields are filled
+    const isComplete = filledRequired === requiredFields.length && filledImportant >= 3;
+    
+    return {
+      isComplete,
+      completionPercentage,
+      filledRequired,
+      totalRequired: requiredFields.length,
+      filledImportant,
+      totalImportant: importantFields.length
+    };
+  };
+
+  const profileStatus = checkProfileCompleteness(userDetails);
+
   // Helper to safely count entries
   const countEntries = (val) => {
     if (!val) return 0;
@@ -59,11 +138,15 @@ export default function Dashboard() {
   const filteredCards = [
     {
       title: 'Profile Status',
-      value: userDetails ? 'Complete' : 'Incomplete',
-      accent: userDetails ? 'text-green-400' : 'text-yellow-400',
-      body: userDetails
-        ? 'Your profile is up to date.'
-        : 'Add medical + contact info for better experience.'
+      value: profileStatus.isComplete ? 'Complete' : `${profileStatus.completionPercentage}%`,
+      accent: profileStatus.isComplete 
+        ? 'text-green-400' 
+        : profileStatus.completionPercentage >= 60 
+          ? 'text-yellow-400' 
+          : 'text-red-400',
+      body: profileStatus.isComplete
+        ? 'Your profile is complete and up to date.'
+        : `${profileStatus.filledRequired}/${profileStatus.totalRequired} required fields filled. Complete for better experience.`
     },
     {
       title: 'Medical Overview',
@@ -186,6 +269,31 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Profile completion warning */}
+        {/* {userDetails && !profileStatus.isComplete && (
+          <div className="rounded-lg border border-yellow-700/50 bg-yellow-900/30 p-4 flex gap-4 items-start">
+            <FiAlertTriangle className="text-yellow-400 text-xl mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-yellow-300 mb-1">
+                Profile {profileStatus.completionPercentage}% Complete
+              </p>
+              <p className="text-yellow-200/80 mb-3">
+                {profileStatus.filledRequired < profileStatus.totalRequired 
+                  ? `Missing ${profileStatus.totalRequired - profileStatus.filledRequired} required fields. ` 
+                  : 'Consider adding '
+                }
+                {profileStatus.filledImportant < 3 && 'emergency contact and address info for full experience.'}
+              </p>
+              <button
+                onClick={() => navigate('/user-details')}
+                className="px-4 py-2 rounded-md bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-xs font-semibold transition"
+              >
+                Complete Profile
+              </button>
+            </div>
+          </div>
+        )} */}
+
         {/* Stats / Cards */}
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-4">
@@ -270,7 +378,7 @@ export default function Dashboard() {
                 onClick={() => navigate('/user-details')}
                 className="mt-5 w-full text-sm bg-green-600 hover:bg-green-500 transition rounded-md py-2.5 font-medium"
               >
-                {userDetails ? 'Update Details' : 'Complete Profile'}
+                {profileStatus.isComplete ? 'Update Details' : 'Complete Profile'}
               </button>
             </div>
 
