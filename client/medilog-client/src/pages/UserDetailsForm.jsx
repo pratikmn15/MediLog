@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Layout from '../components/Layout';
 
 const UserDetailsForm = () => {
   const navigate = useNavigate();
@@ -65,7 +66,6 @@ const UserDetailsForm = () => {
       } catch (err) {
         if (err.response?.status === 404) {
           console.log('No existing details found - will create new');
-          // Just continue with empty form
         } else {
           setError(err.response?.data?.message || 'Failed to load user details');
         }
@@ -105,18 +105,15 @@ const UserDetailsForm = () => {
     setLoading(true);
 
     try {
-      // Clean the data before sending
       const cleanData = {
         ...formData,
-        // Remove _id and other MongoDB fields that shouldn't be sent
         _id: undefined,
         __v: undefined,
         createdAt: undefined,
         updatedAt: undefined,
-        user: undefined // Remove user field as it's set by the server
+        user: undefined
       };
 
-      // Remove undefined values
       Object.keys(cleanData).forEach(key => {
         if (cleanData[key] === undefined) {
           delete cleanData[key];
@@ -125,7 +122,6 @@ const UserDetailsForm = () => {
 
       console.log('Submitting data:', cleanData);
 
-      // Always use POST - let backend handle create/update logic
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/user-details`,
         cleanData,
@@ -159,275 +155,281 @@ const UserDetailsForm = () => {
 
   if (loading && !formData.fullName) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <Layout>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </Layout>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="text-center">
-          <div className="p-4 text-red-500 bg-red-100 dark:bg-red-900/50 rounded-lg mb-4">
-            {error}
+      <Layout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="p-4 text-red-500 bg-red-100 dark:bg-red-900/50 rounded-lg mb-4">
+              {error}
+            </div>
+            <button 
+              onClick={() => setError(null)}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+            >
+              Continue Anyway
+            </button>
           </div>
-          <button 
-            onClick={() => setError(null)}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
-          >
-            Continue Anyway
-          </button>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
-      <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-slate-800 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-            Patient Information
-          </h2>
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
-          >
-            Back to Dashboard
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Basic Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                name="fullName" 
-                placeholder="Full Name" 
-                value={formData.fullName} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                required
-              />
-              <input 
-                type="date" 
-                name="dateOfBirth" 
-                value={formData.dateOfBirth?.split('T')[0] || ''} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                required
-              />
-              <select 
-                name="gender" 
-                value={formData.gender} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                required
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-              <input 
-                name="bloodGroup" 
-                placeholder="Blood Group (e.g. A+)" 
-                value={formData.bloodGroup} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-            </div>
-          </div>
-
-          {/* Contact Info Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Contact Information</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <input 
-                name="phone" 
-                placeholder="Phone" 
-                value={formData.phone} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-            </div>
-          </div>
-
-          {/* Address Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Address</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                name="address.line1" 
-                placeholder="Line 1" 
-                value={formData.address.line1} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="address.line2" 
-                placeholder="Line 2" 
-                value={formData.address.line2} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="address.city" 
-                placeholder="City" 
-                value={formData.address.city} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="address.state" 
-                placeholder="State" 
-                value={formData.address.state} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="address.zip" 
-                placeholder="ZIP Code" 
-                value={formData.address.zip} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="address.country" 
-                placeholder="Country" 
-                value={formData.address.country} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-            </div>
-          </div>
-
-          {/* Medical Info Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Medical History</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                name="allergies" 
-                placeholder="Allergies (comma-separated)" 
-                value={formData.allergies} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="chronicDiseases" 
-                placeholder="Chronic Diseases (comma-separated)" 
-                value={formData.chronicDiseases} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="currentMedications" 
-                placeholder="Current Medications (comma-separated)" 
-                value={formData.currentMedications} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="surgeries" 
-                placeholder="Past Surgeries (comma-separated names)" 
-                value={formData.surgeries} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-            </div>
-          </div>
-
-          {/* Emergency Contact Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Emergency Contact</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                name="emergencyContact.name" 
-                placeholder="Name" 
-                value={formData.emergencyContact.name} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="emergencyContact.relation" 
-                placeholder="Relation" 
-                value={formData.emergencyContact.relation} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="emergencyContact.phone" 
-                placeholder="Phone" 
-                value={formData.emergencyContact.phone} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-            </div>
-          </div>
-
-          {/* Insurance Info Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Insurance Info</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                name="insuranceProvider" 
-                placeholder="Insurance Provider" 
-                value={formData.insuranceProvider} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                name="policyNumber" 
-                placeholder="Policy Number" 
-                value={formData.policyNumber} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-              <input 
-                type="date" 
-                name="validTill" 
-                placeholder="Valid Till" 
-                value={formData.validTill?.split('T')[0] || ''} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              />
-            </div>
-          </div>
-
-          {/* Notes Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Additional Notes</h3>
-            <textarea 
-              name="notes" 
-              placeholder="Any additional information or notes" 
-              value={formData.notes} 
-              onChange={handleChange} 
-              className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              rows="4"
-            ></textarea>
-          </div>
-
-          <div className="flex gap-4 pt-6">
+    <Layout>
+      <div className="py-8 px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-slate-200">
+              Patient Information
+            </h2>
             <button 
-              type="submit" 
-              disabled={loading}
-              className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
-            >
-              {loading ? 'Saving...' : 'Save Details'}
-            </button>
-            <button 
-              type="button"
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+              className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
             >
-              Cancel
+              Back to Dashboard
             </button>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit} className="space-y-6 bg-slate-800/40 border border-slate-700/60 rounded-lg p-6">
+            {/* Basic Info Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input 
+                  name="fullName" 
+                  placeholder="Full Name" 
+                  value={formData.fullName} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                  required
+                />
+                <input 
+                  type="date" 
+                  name="dateOfBirth" 
+                  value={formData.dateOfBirth?.split('T')[0] || ''} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                  required
+                />
+                <select 
+                  name="gender" 
+                  value={formData.gender} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                  required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <input 
+                  name="bloodGroup" 
+                  placeholder="Blood Group (e.g. A+)" 
+                  value={formData.bloodGroup} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Contact Info Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Contact Information</h3>
+              <div className="grid grid-cols-1 gap-4">
+                <input 
+                  name="phone" 
+                  placeholder="Phone" 
+                  value={formData.phone} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Address Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Address</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input 
+                  name="address.line1" 
+                  placeholder="Line 1" 
+                  value={formData.address.line1} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="address.line2" 
+                  placeholder="Line 2" 
+                  value={formData.address.line2} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="address.city" 
+                  placeholder="City" 
+                  value={formData.address.city} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="address.state" 
+                  placeholder="State" 
+                  value={formData.address.state} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="address.zip" 
+                  placeholder="ZIP Code" 
+                  value={formData.address.zip} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="address.country" 
+                  placeholder="Country" 
+                  value={formData.address.country} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Medical Info Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Medical History</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input 
+                  name="allergies" 
+                  placeholder="Allergies (comma-separated)" 
+                  value={formData.allergies} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="chronicDiseases" 
+                  placeholder="Chronic Diseases (comma-separated)" 
+                  value={formData.chronicDiseases} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="currentMedications" 
+                  placeholder="Current Medications (comma-separated)" 
+                  value={formData.currentMedications} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="surgeries" 
+                  placeholder="Past Surgeries (comma-separated names)" 
+                  value={formData.surgeries} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Emergency Contact Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Emergency Contact</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input 
+                  name="emergencyContact.name" 
+                  placeholder="Name" 
+                  value={formData.emergencyContact.name} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="emergencyContact.relation" 
+                  placeholder="Relation" 
+                  value={formData.emergencyContact.relation} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="emergencyContact.phone" 
+                  placeholder="Phone" 
+                  value={formData.emergencyContact.phone} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Insurance Info Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Insurance Info</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input 
+                  name="insuranceProvider" 
+                  placeholder="Insurance Provider" 
+                  value={formData.insuranceProvider} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  name="policyNumber" 
+                  placeholder="Policy Number" 
+                  value={formData.policyNumber} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+                <input 
+                  type="date" 
+                  name="validTill" 
+                  placeholder="Valid Till" 
+                  value={formData.validTill?.split('T')[0] || ''} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Notes Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Additional Notes</h3>
+              <textarea 
+                name="notes" 
+                placeholder="Any additional information or notes" 
+                value={formData.notes} 
+                onChange={handleChange} 
+                className="w-full p-3 border border-slate-600 rounded-lg bg-slate-700 text-slate-100"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div className="flex gap-4 pt-6">
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+              >
+                {loading ? 'Saving...' : 'Save Details'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
