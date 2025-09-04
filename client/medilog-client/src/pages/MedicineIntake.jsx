@@ -205,10 +205,24 @@ const MedicineIntake = () => {
 
   const handleDownloadPDF = async () => {
     try {
+      setLoading(true);
       await fetchUserDetailsForPdf();
-      await downloadHealthRecordPDF(userDetailsForPdf, medicines);
+      
+      // Give a small delay to ensure state is updated
+      setTimeout(async () => {
+        try {
+          await downloadHealthRecordPDF(userDetailsForPdf, medicines);
+        } catch (error) {
+          console.error('PDF generation error:', error);
+          alert('Error generating PDF. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      }, 100);
     } catch (error) {
-      alert('Error generating PDF. Please try again.');
+      console.error('Error fetching data for PDF:', error);
+      alert('Error preparing PDF data. Please try again.');
+      setLoading(false);
     }
   };
 
