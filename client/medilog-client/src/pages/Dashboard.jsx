@@ -4,8 +4,9 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import {
-  FiSearch, FiAlertTriangle
+  FiSearch, FiAlertTriangle, FiDownload
 } from 'react-icons/fi';
+import { downloadHealthRecordPDF } from '../utils/pdfGenerator';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [query, setQuery] = useState('');
+  const [medicinesForPdf, setMedicinesForPdf] = useState([]);
 
   useEffect(() => {
     console.debug('[Dashboard] mount effect token=', token, 'authLoading=', authLoading);
@@ -43,6 +45,27 @@ export default function Dashboard() {
     fetchData();
     return () => { cancelled = true; };
   }, [token, authLoading]);
+
+  const fetchMedicinesForPdf = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/medicines`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMedicinesForPdf(response.data || []);
+    } catch (err) {
+      console.error('Error fetching medicines for PDF:', err);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      await fetchMedicinesForPdf();
+      await downloadHealthRecordPDF(userDetails, medicinesForPdf);
+    } catch (error) {
+      alert('Error generating PDF. Please try again.');
+    }
+  };
 
   const displayName = userDetails?.fullName || 'User';
 
@@ -251,14 +274,27 @@ export default function Dashboard() {
               Welcome back, {displayName}. Manage your health info.
             </p>
           </div>
-          <div className="relative max-w-md">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search insights..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-800/60 border border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm placeholder:text-slate-500"
-            />
+          <div className="flex justify-between items-center">
+            <div className="relative max-w-md">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search insights..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-800/60 border border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm placeholder:text-slate-500"
+              />
+            </div>
+            
+            {/* Add this PDF download button */}
+            {userDetails && (
+              <button
+                onClick={handleDownloadPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+              >
+                <FiDownload />
+                Download Health Record
+              </button>
+            )}
           </div>
         </div>
 

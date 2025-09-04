@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import UserDetailsForm from './pages/UserDetailsForm';
 import AppointmentForm from './pages/AppointmentForm';
+import MedicineIntake from './pages/MedicineIntake';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import RouteGuard from './components/RouteGuard';
 
@@ -55,6 +56,14 @@ function App() {
               <AppointmentForm />
             </RouteGuard>
           }
+        />
+        <Route 
+          path="/medicines" 
+          element={
+            <RouteGuard>
+              <MedicineIntake />
+            </RouteGuard>
+          } 
         />
         
         <Route path="*" element={<Navigate to="/login" replace />} />

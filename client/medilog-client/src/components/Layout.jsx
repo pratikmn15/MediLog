@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   FiHome, FiUser, FiCalendar, FiActivity,
   FiLogOut, FiChevronDown, FiDatabase,
-  FiShield
+  FiShield, FiPackage  // Use FiPackage instead of FiPill
 } from 'react-icons/fi';
 
 const Layout = ({ children }) => {
@@ -49,6 +49,7 @@ const Layout = ({ children }) => {
   const userCity = userDetails?.address?.city || '—';
   const userInitial = displayName.charAt(0).toUpperCase();
 
+  // Update the navItems array to include medicines
   const navItems = [
     { label: 'Overview', icon: <FiHome />, to: '/dashboard' },
     { label: 'Profile', icon: <FiUser />, to: '/user-details' },
@@ -59,6 +60,7 @@ const Layout = ({ children }) => {
       key: 'records',
       children: [
         { label: 'Appointments', icon: <FiCalendar />, to: '/appointments', badge: 0 },
+        { label: 'Medicines', icon: <FiPackage />, to: '/medicines' }, // Changed to FiPackage
         { label: 'Vitals', icon: <FiActivity />, to: '/vitals', badge: 3 },
         { label: 'Insurance', icon: <FiShield />, to: '/insurance' }
       ]
@@ -180,26 +182,6 @@ const Layout = ({ children }) => {
               </div>
             </div>
           </div>
-          
-          {/* Additional user info */}
-          {/* {userDetails && !loading && (
-            <div className="mb-3 p-2 bg-slate-800/40 rounded-md">
-              <div className="text-xs text-slate-400 space-y-1">
-                {userDetails.phone && (
-                  <div className="flex justify-between">
-                    <span>Phone:</span>
-                    <span className="text-slate-300">{userDetails.phone}</span>
-                  </div>
-                )}
-                {userDetails.bloodGroup && (
-                  <div className="flex justify-between">
-                    <span>Blood:</span>
-                    <span className="text-slate-300">{userDetails.bloodGroup}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )} */}
           
           <button
             onClick={logout}
