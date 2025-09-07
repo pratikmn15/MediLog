@@ -10,7 +10,14 @@ const appointmentSchema = new mongoose.Schema({
   appointmentDate: { type: Date, required: true },
   reason: { type: String },
 
-  // Reminder Feature
+  // Google Calendar Integration
+  googleCalendar: {
+    eventId: { type: String }, // Google Calendar event ID
+    synced: { type: Boolean, default: false },
+    lastSynced: { type: Date }
+  },
+
+  // Reminder Feature (keep existing for fallback)
   reminder: {
     enabled: { type: Boolean, default: false },
     type: { type: String, enum: ['one-time', 'daily', 'weekly', 'monthly'], default: 'one-time' },

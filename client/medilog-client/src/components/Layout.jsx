@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   FiHome, FiUser, FiCalendar, FiActivity,
   FiLogOut, FiChevronDown, FiDatabase,
-  FiShield, FiPackage  // Use FiPackage instead of FiPill
+  FiShield, FiPackage, FiSettings  // Add FiSettings
 } from 'react-icons/fi';
 
 const Layout = ({ children }) => {
@@ -53,6 +53,7 @@ const Layout = ({ children }) => {
   const navItems = [
     { label: 'Overview', icon: <FiHome />, to: '/dashboard' },
     { label: 'Profile', icon: <FiUser />, to: '/user-details' },
+    { label: 'Settings', icon: <FiSettings />, to: '/settings' }, // Add this line
     {
       label: 'Records',
       icon: <FiDatabase />,
@@ -60,7 +61,7 @@ const Layout = ({ children }) => {
       key: 'records',
       children: [
         { label: 'Appointments', icon: <FiCalendar />, to: '/appointments', badge: 0 },
-        { label: 'Medicines', icon: <FiPackage />, to: '/medicines' }, // Changed to FiPackage
+        { label: 'Medicines', icon: <FiPackage />, to: '/medicines' },
         { label: 'Vitals', icon: <FiActivity />, to: '/vitals', badge: 3 },
         { label: 'Insurance', icon: <FiShield />, to: '/insurance' }
       ]

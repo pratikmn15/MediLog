@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import UserDetailsForm from './pages/UserDetailsForm';
 import AppointmentForm from './pages/AppointmentForm';
 import MedicineIntake from './pages/MedicineIntake';
+import Settings from './pages/Settings';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import RouteGuard from './components/RouteGuard';
 
@@ -62,6 +63,14 @@ function App() {
           element={
             <RouteGuard>
               <MedicineIntake />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <RouteGuard>
+              <Settings />
             </RouteGuard>
           } 
         />

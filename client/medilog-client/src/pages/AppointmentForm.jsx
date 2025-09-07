@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Add useEffect
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
+// Add these imports
+import { googleCalendarService } from '../services/googleCalendarService';
+import { FiCalendar } from 'react-icons/fi';
 
 const AppointmentForm = () => {
   const navigate = useNavigate();
   const { token, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
+  
+  // Add calendar state
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [checkingCalendar, setCheckingCalendar] = useState(true);
+  
   const [formData, setFormData] = useState({
     doctorName: '',
     appointmentDate: '',
     reason: '',
+    syncWithGoogleCalendar: false, // Add this field
     reminder: {
       enabled: false,
       type: 'one-time',
@@ -19,6 +28,32 @@ const AppointmentForm = () => {
       startFrom: ''
     }
   });
+
+  // Check calendar status when component loads
+  useEffect(() => {
+    const checkCalendarStatus = async () => {
+      if (token) {
+        try {
+          const result = await googleCalendarService.checkStatus(token);
+          if (result.success) {
+            setCalendarConnected(result.data.connected);
+            // Auto-enable if connected
+            if (result.data.connected) {
+              setFormData(prev => ({ ...prev, syncWithGoogleCalendar: true }));
+            }
+          }
+        } catch (error) {
+          console.error('Error checking calendar status:', error);
+        } finally {
+          setCheckingCalendar(false);
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      checkCalendarStatus();
+    }
+  }, [token, isAuthenticated]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -147,9 +182,58 @@ const AppointmentForm = () => {
               </div>
             </div>
 
+            {/* Google Calendar Toggle */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-300">Calendar Integration</h3>
+              
+              {checkingCalendar ? (
+                <div className="flex items-center gap-2 text-slate-400">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div>
+                  <span className="text-sm">Checking Google Calendar connection...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 border border-slate-600 rounded-lg bg-slate-700/50">
+                  <div className="flex items-center gap-3">
+                    <FiCalendar className="text-blue-400" />
+                    <div>
+                      <label htmlFor="syncWithGoogleCalendar" className="text-sm font-medium text-slate-300">
+                        Sync with Google Calendar
+                      </label>
+                      <p className="text-xs text-slate-400">
+                        {calendarConnected 
+                          ? 'Add this appointment to your Google Calendar with reminders'
+                          : 'Google Calendar not connected - only email reminders will be sent'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!calendarConnected && (
+                      <button
+                        type="button"
+                        onClick={() => navigate('/settings')}
+                        className="text-xs text-blue-400 hover:text-blue-300 underline"
+                      >
+                        Connect
+                      </button>
+                    )}
+                    <input 
+                      type="checkbox" 
+                      id="syncWithGoogleCalendar"
+                      name="syncWithGoogleCalendar" 
+                      checked={formData.syncWithGoogleCalendar} 
+                      onChange={handleChange}
+                      disabled={!calendarConnected}
+                      className="rounded border-slate-600 focus:ring-blue-500 disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Reminder Settings */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-300">Reminder Settings</h3>
+              <h3 className="text-lg font-semibold text-slate-300">Email Reminder Settings</h3>
               
               <div className="flex items-center">
                 <input 
@@ -161,7 +245,7 @@ const AppointmentForm = () => {
                   className="mr-3 rounded border-slate-600 focus:ring-blue-500"
                 />
                 <label htmlFor="reminderEnabled" className="text-sm text-slate-300">
-                  Enable reminder for this appointment
+                  Enable email reminder for this appointment
                 </label>
               </div>
 
