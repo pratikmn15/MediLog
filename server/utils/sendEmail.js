@@ -1,28 +1,26 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
+
+// Set Twilio SendGrid API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendEmail = async (to, subject, message) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // Use App Password for Gmail
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      text: message,
-      html: `<p>${message}</p>` // Add HTML version
+    const msg = {
+      to: to, // Recipient email
+      from: process.env.SENDGRID_FROM_EMAIL, // Your verified sender email
+      subject: subject,
+      text: message, // Plain text version
+      html: `<p>${message}</p>`, // HTML version
     };
 
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', result.messageId);
+    const result = await sgMail.send(msg);
+    console.log('Email sent successfully via Twilio SendGrid:', result[0].statusCode);
     return result;
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error('Twilio SendGrid email sending failed:', error);
+    if (error.response) {
+      console.error('SendGrid error details:', error.response.body);
+    }
     throw error;
   }
 };

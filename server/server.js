@@ -8,7 +8,12 @@ import appointmentRoutes from './routes/appointmentRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
 import googleCalendarRoutes from './routes/googleCalendarRoutes.js';
 
+// Load environment variables FIRST
 dotenv.config();
+
+// THEN import scheduler (after env vars are loaded)
+import './jobs/reminderScheduler.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -27,17 +32,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/google-calendar', googleCalendarRoutes);
 
-// Test route for environment variables
-app.get('/test-env', (req, res) => {
-  res.json({
-    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
-    hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
-    hasRedirectUri: !!process.env.GOOGLE_REDIRECT_URI,
-    clientIdLength: process.env.GOOGLE_CLIENT_ID?.length || 0
-  });
-});
-
-// MongoDB Connect (removed deprecated options)
+// MongoDB Connect
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected");
